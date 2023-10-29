@@ -8,7 +8,7 @@ use std::io;
 mod main_bus;
 mod chip;
 mod cpu;
-
+mod cpu_opcodes;
 use main_bus::MainBus;
 use cpu::CPU;
 
