@@ -2,28 +2,38 @@
  * @Date: 2023-10-29 10:59:12
  * @Author: mental1104 mental1104@gmail.com
  * @LastEditors: mental1104 mental1104@gmail.com
- * @LastEditTime: 2023-10-29 11:57:54
+ * @LastEditTime: 2023-10-29 15:51:34
  */
-use std::io;
 mod main_bus;
 mod chip;
 mod cpu;
 mod cpu_opcodes;
+mod cartridge;
 use main_bus::MainBus;
 use cpu::CPU;
+use cartridge::Cartridge;
 
 fn main() {
-    let mut bus = MainBus::new();
+    let mut cartridge = Cartridge::new();
+    if let Err(error) = cartridge.load_from_file("./rom/example.nes") {
+        println!("Error: {}", error);
+        return;
+    }
+    let mut bus: MainBus = MainBus::new();
+    MainBus::load(&mut bus, cartridge);
     let mut test_cpu = CPU::new(&mut bus);
 
     test_cpu.reset();
-    println!("After reset the PC is: {}", test_cpu.r_pc);
 
-    // CPU取指解码执行，目前仅实现取指操作
-    test_cpu.step();
-    println!("After Step the PC is: {}", test_cpu.r_pc);
+    println!("[+]After reset, the PC is: {:X}", test_cpu.r_pc);
 
-    // 等待用户输入以保持控制台窗口打开
-    let mut input = String::new();
-    io::stdin().read_line(&mut input).expect("Failed to read line");
+    // CPU取指解码执行
+    let mut cycle = 4;
+    while cycle > 0 {
+        test_cpu.step();
+        cycle -= 1;
+    }
+    
+    let acc_val = test_cpu.r_a;
+    println!("[+]执行4+2的操作后，ACC寄存器的值为: {}", acc_val);
 }
